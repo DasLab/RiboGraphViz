@@ -15,10 +15,7 @@ Note: Not intended for detailed layouts -- loops may switch orientation in z-axi
 *Below*: A eGFP mRNA, MFE calculated at increasing temperatures in Vienna using Arnie.
 ![](images/melting_eGFP_mRNA.gif)
 
-Represent an RNA secondary structure using a force-directed layout from GraphViz.
-Also calculates topology features of secondary structures, like Maximum Ladder Distance, number of hairpins, and more.
-
-See `RiboGraphViz_demo.ipynb` for example usage and how to generate above images.
+See `RiboGraphViz_demo.ipynb` for example usage.
 
 ![](images/RGV_example_colorings.png)
 
