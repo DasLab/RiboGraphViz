@@ -1,5 +1,5 @@
 import networkx as nx
-import arnie.RNAGraph.RG_utils as utils
+import RiboGraphViz.RG_utils as utils
 from copy import copy
 from networkx.drawing.nx_agraph import graphviz_layout
 import matplotlib.colors as mcolors

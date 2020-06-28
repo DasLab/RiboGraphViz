@@ -2,7 +2,7 @@ from collections import Counter
 import numpy as np
 from copy import copy
 
-#Copied from pyFold-1D (H Wayment-Steele)
+#Copied from ToyFold 1D utils (Rhiju Das Matlab code originally)
 
 def find_all(s, ch):
     if isinstance(ch, list):

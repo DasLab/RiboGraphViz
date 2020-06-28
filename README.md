@@ -16,6 +16,7 @@ Note: Not intended for detailed layouts -- loops may switch orientation in z-axi
 *Below*: Visualizing the MFE structure and p(unpaired) of an mRNA for eGFP, at increasing temperatures in Vienna.
 ![](images/melting_eGFP_mRNA.gif)
 
+To set up: `python setup.py install`
 See `RiboGraphViz_demo.ipynb` for example usage.
 
 ![](images/RGV_example_colorings.png)
