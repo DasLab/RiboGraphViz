@@ -11,6 +11,8 @@ Note: Not intended for detailed layouts -- loops may switch orientation in z-axi
 
 ![](images/MS2_example.png)
 
+*Above*: MS2 bacteriophage genome structure, colored by prob(unpaired) calculated in EternaFold.
+*Below*: A eGFP mRNA, MFE calculated at increasing temperatures in Vienna using Arnie.
 ![](images/melting_eGFP_mRNA.gif)
 
 Represent an RNA secondary structure using a force-directed layout from GraphViz.
@@ -20,5 +22,5 @@ See `RiboGraphViz_demo.ipynb` for example usage and how to generate above images
 
 ![](images/RGV_example_colorings.png)
 
-Below: 20 randomly-generated RNAs.
+*Below*: 20 randomly-generated RNAs.
 ![](images/multiple_struct_example.png)
