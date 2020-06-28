@@ -11,8 +11,9 @@ Note: Not intended for detailed layouts -- loops may switch orientation in z-axi
 
 ![](images/MS2_example.png)
 
-*Above*: MS2 bacteriophage genome structure, colored by prob(unpaired) calculated in EternaFold.
-*Below*: A eGFP mRNA, MFE calculated at increasing temperatures in Vienna using Arnie.
+*Above*: MS2 bacteriophage genome structure, colored by prob(unpaired), calculated in EternaFold.
+
+*Below*: Visualizing the MFE structure and p(unpaired) of an mRNA for eGFP, at increasing temperatures in Vienna.
 ![](images/melting_eGFP_mRNA.gif)
 
 See `RiboGraphViz_demo.ipynb` for example usage.
