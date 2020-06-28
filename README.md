@@ -20,4 +20,5 @@ See `RiboGraphViz_demo.ipynb` for example usage and how to generate above images
 
 ![](images/RGV_example_colorings.png)
 
+Below: 20 randomly-generated RNAs.
 ![](images/multiple_struct_example.png)
