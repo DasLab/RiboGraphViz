@@ -8,9 +8,7 @@ Hannah Wayment-Steele
 Python tool for visualizing global properties of sets of many large RNAs.
 Note: Not intended for detailed layouts -- loops may switch orientation in z-axis.
 
-![](images/MS2_example.pdf)
-
-![](images/multiple_struct_example.png)
+![](images/MS2_example.png)
 
 ![](images/melting_eGFP_mRNA.gif)
 
@@ -19,3 +17,4 @@ Also calculates topology features of secondary structures, like Maximum Ladder D
 
 See `RiboGraphViz_demo.ipynb` for example usage and how to generate above images.
 
+![](images/multiple_struct_example.png)
