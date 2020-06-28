@@ -19,5 +19,5 @@ See `RiboGraphViz_demo.ipynb` for example usage.
 
 ![](images/RGV_example_colorings.png)
 
-*Below*: 20 randomly-generated RNAs.
+*Below*: Vienna MFE structures of 20 randomly-generated RNAs.
 ![](images/multiple_struct_example.png)
