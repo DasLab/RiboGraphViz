@@ -1,14 +1,10 @@
 # RiboGraphViz
 
-(c) 2020 Leland Stanford Jr University
-
 Authors:
 * Hannah Wayment-Steele
 * Credit to utils from Rhiju Das' ToyFold-1D code.
 
-Python tool for visualizing global properties of sets of many large RNAs.
-
-Note: Not intended for detailed layouts -- loops may switch orientation in z-axis.
+Visualize global properties of large RNAs, using force-directed layout from GraphViz.
 
 ![](images/MS2_example.png)
 
@@ -16,6 +12,8 @@ Note: Not intended for detailed layouts -- loops may switch orientation in z-axi
 
 *Below*: Visualizing the MFE structure and p(unpaired) of an mRNA for eGFP, at increasing temperatures in Vienna.
 ![](images/melting_eGFP_mRNA.gif)
+
+Note: Not intended for detailed layouts -- loops may switch orientation in z-axis.
 
 To set up:
 ```
