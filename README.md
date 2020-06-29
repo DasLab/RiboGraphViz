@@ -3,7 +3,8 @@
 (c) 2020 Leland Stanford Jr University
 
 Authors:
-Hannah Wayment-Steele
+* Hannah Wayment-Steele
+* Credit to utils from Rhiju Das' ToyFold-1D code.
 
 Python tool for visualizing global properties of sets of many large RNAs.
 
