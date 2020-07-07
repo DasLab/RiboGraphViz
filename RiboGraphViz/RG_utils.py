@@ -119,13 +119,14 @@ def parse_out_chainbreak(secstruct):
     secstruct_new = []
     is_chainbreak = []
 
-    for char in secstruct:
+    chainbreak_ctr=0
+
+    for i, char in enumerate(secstruct):
         if char in [',','+',' ','&']:
-            if len(is_chainbreak)>0:
-                is_chainbreak[-1] = 1
+            is_chainbreak.append(chainbreak_ctr)
         else:
             secstruct_new.append(char)
-            is_chainbreak.append(0)
+            chainbreak_ctr+=1
     return is_chainbreak, ''.join(secstruct_new)
 
 

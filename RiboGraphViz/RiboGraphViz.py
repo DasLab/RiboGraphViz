@@ -36,12 +36,12 @@ class RiboGraphViz(object):
 
         self.chainbreak, self.secstruct = utils.parse_out_chainbreak(secstruct)
 
-        if np.sum(self.chainbreak) > 0:
+        if len(self.chainbreak) > 0:
             self.is_multi = True
         else:
             self.is_multi = False
         stems = utils.parse_stems_from_bps(utils.convert_structure_to_bps(self.secstruct))
-        self.stems = [x for x in sorted(stems)]
+        self.stems = stems #[x for x in sorted(stems)]
         self.stem_assignment = utils.get_stem_assignment(self.secstruct)
         self.pairmap = utils.get_pairmap(self.secstruct)
         self.G = nx.DiGraph()
@@ -52,10 +52,12 @@ class RiboGraphViz(object):
 
         self.setup_graph()
 
-        nodes = [n for n in list(self.G.nodes) if not isinstance(n,str)]
-        subgraph = self.G.subgraph(nodes)
+        nodes = [n for n in list(self.G.nodes)] # if not isinstance(n,str)]
+        subgraph = self.G.subgraph(nodes).to_undirected()
+        node1 = [x for x in nx.traversal.bfs_edges(subgraph, 'h1a')][-1][-1]
+        node2 = [x for x in nx.traversal.bfs_edges(subgraph, node1)][-1][-1]
 
-        self.MLD = nx.algorithms.dag.dag_longest_path_length(subgraph)
+        self.MLD = nx.shortest_path_length(subgraph, node1, node2, weight='MLD_weight')
         self.n_hairpins, self.n_internal_loops, self.n_3WJs, self.n_4WJs, self.n_5WJs_up = self.count_loops()
 
     def setup_graph(self):
@@ -90,18 +92,21 @@ class RiboGraphViz(object):
                         letter='a'
                     elif self.secstruct[i-1]==')':
                         letter='b'
-                    if not self.chainbreak[i-1] == 1:
-                        self.G.add_edge('n%d' % i,'h%d%s' % (self.stem_assignment[i-1], letter), len=1.25)
+                    if i not in self.chainbreak:
+                        self.G.add_edge('n%d' % i,'h%d%s' % (self.stem_assignment[i-1], letter), len=1.25, MLD_weight=0)
+
                     # add helix_a node here
 
                 if stem_assignment_right[i] > 0:
+                    #print(i)
 
                     if self.secstruct[i+1]==')':
                         letter='a'
                     elif self.secstruct[i+1]=='(':
                         letter='b'
-                    if not self.chainbreak[i]==1:
-                        self.G.add_edge('n%d' % i,'h%d%s' % (self.stem_assignment[i+1], letter), len=1.25)
+                    if i+1 not in self.chainbreak:
+                        self.G.add_edge('n%d' % i,'h%d%s' % (self.stem_assignment[i+1], letter), len=1.25, MLD_weight=0)
+
                     # add helix_b node here
 
         nuc_nodes = [n for n in list(self.G.nodes) if isinstance(n,str) and n.startswith('n')] # hacky
@@ -110,8 +115,9 @@ class RiboGraphViz(object):
             if 'n%d' % (ind-1) in nuc_nodes:
                 # check for chainbreak
 
-                if not self.chainbreak[ind-1]==1:
-                    self.G.add_edge('n%d' % (ind-1), 'n%d' % ind, len=1)
+                if ind not in self.chainbreak:
+                    self.G.add_edge('n%d' % (ind-1), 'n%d' % ind, len=1, MLD_weight=0)
+
                 #print('n%d' % (ind-1), 'n%d' % ind,)
 
 
@@ -121,7 +127,7 @@ class RiboGraphViz(object):
             stem_length = len(self.stems[stem_ind-1])
             color_ind = np.where(self.stem_assignment==stem_ind)[0][0]
 
-            self.G.add_edge('h%da' % (stem_ind),'h%db' % (stem_ind), len=self.helix_multiplier*(stem_length-0.99))
+            self.G.add_edge('h%da' % (stem_ind),'h%db' % (stem_ind), len=self.helix_multiplier*(stem_length-0.99), MLD_weight=stem_length)
 
         for i in range(self.N-1):
 
@@ -136,12 +142,12 @@ class RiboGraphViz(object):
                     # print(self.secstruct[i:i+2])
 
                     if self.secstruct[i:i+2] == '((':
-                        self.G.add_edge('h%da' % stem_ind_1,'h%db' % stem_ind_2, len=1, weight=1)
+                        self.G.add_edge('h%da' % stem_ind_1,'h%db' % stem_ind_2, len=1, weight=1, MLD_weight=0)
                     elif self.secstruct[i:i+2] == ')(':
-                        if not self.chainbreak[i]==1:
-                            self.G.add_edge('h%db' % stem_ind_1,'h%db' % stem_ind_2, len=1, weight=1)
+                        if i+1 not in self.chainbreak:
+                            self.G.add_edge('h%db' % stem_ind_1,'h%db' % stem_ind_2, len=1, weight=1, MLD_weight=0)
                     elif self.secstruct[i:i+2] == '))':
-                        self.G.add_edge('h%db' % stem_ind_1,'h%da' % stem_ind_2, length=1, weight=1)
+                        self.G.add_edge('h%db' % stem_ind_1,'h%da' % stem_ind_2, len=1, weight=1, MLD_weight=0)
 
     def add_edges_r_(self, start_index, end_index, last_helix, last_loop):
         '''Recursive method to add edges to graph.'''
@@ -166,7 +172,7 @@ class RiboGraphViz(object):
                         #print(last_helix, len(stems[int(last_helix-1)]))
                         self.G.add_edge(int(last_loop), int(last_helix),
                                    len = len(self.stems[int(last_helix-1)]),
-                                  weight = len(self.stems[int(last_helix-1)]))
+                                  weight = len(self.stems[int(last_helix-1)]), MLD_weight=0)
 
                         last_loop = copy(last_helix)
 
@@ -178,7 +184,7 @@ class RiboGraphViz(object):
 
                     jj+=1
 
-    def draw(self, node_scaling = 1, label=None, line=False,
+    def draw(self, node_scaling = 1, label=None, struct_label=None, line=False,
          c = None, cmap='plasma', align=False, alpha=None, ax=None, fontsize=12,
          align_mode='COM'):
         '''
@@ -199,6 +205,12 @@ class RiboGraphViz(object):
         
         if self.is_multi and align:
             raise RuntimeError('Alignment and multiple structures not yet implemented.')
+
+        if struct_label is not None:
+            if self.is_multi:
+                assert len(struct_label) == len(self.chainbreak)+1
+            else:
+                raise RuntimeError('struct_label present and not multiple structures.')
 
         N = len(self.secstruct)
         plot_nodes = [n for n in list(self.G.nodes) if isinstance(n,str)]
@@ -348,7 +360,7 @@ class RiboGraphViz(object):
             assert len(alpha)==N
 
         for i in range(N):
-            circ = plt.Circle((new_node_pos_list_x[i], new_node_pos_list_y[i]), radius=bond_width/2, color=colors[i], alpha=alpha[i])
+            circ = plt.Circle((new_node_pos_list_x[i], new_node_pos_list_y[i]), radius=bond_width/2, color=colors[i], alpha=alpha[i],linewidth=0)
             ax.add_artist(circ)
             if label:
                 plt.text(new_node_pos_list_x[i], new_node_pos_list_y[i], label[i],
@@ -361,6 +373,13 @@ class RiboGraphViz(object):
             if "3'" in list(subgraph.nodes()):
                 plt.text(threeprime_x, threeprime_y, "3'")
 
+
+        if struct_label and self.is_multi:
+            label_pos = [0]+self.chainbreak
+            for i, x in enumerate(struct_label):
+                plt.text(new_node_pos_list_x[label_pos[i]],new_node_pos_list_y[label_pos[i]], x)
+
+
         ax.axis('off')
 
         # nx.draw(subgraph, pos, node_size=node_sizes, labels = node_labels, node_color = sns.color_palette('deep',1), 
@@ -371,6 +390,7 @@ class RiboGraphViz(object):
         n_1, n_2, n_3, n_4, n_5 = 0,0,0,0,0
         nodes = [n for n in list(self.G.nodes) if not isinstance(n,str)]
         subgraph = self.G.subgraph(nodes)
+        subgraph = subgraph.to_undirected()
 
         for x in list(subgraph.degree):
             if x[1]==1:
