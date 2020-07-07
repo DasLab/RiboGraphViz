@@ -1,22 +1,23 @@
 # RiboGraphViz
 
-(c) 2020 Leland Stanford Jr University
+Visualize global properties of large RNAs using force-directed layout from GraphViz.
 
 Authors:
-Hannah Wayment-Steele
+* Hannah Wayment-Steele
+* Credit to utils from Rhiju Das' ToyFold-1D code.
+![](images/MS2_example.png)
+*Above*: MS2 bacteriophage genome structure, colored by prob(unpaired), calculated in EternaFold.
 
-Python tool for visualizing global properties of sets of many large RNAs.
+*Below*: Visualizing the MFE structure and p(unpaired) of an mRNA for eGFP at increasing temperatures in Vienna.
+![](images/melting_eGFP_mRNA.gif)
 
 Note: Not intended for detailed layouts -- loops may switch orientation in z-axis.
 
-![](images/MS2_example.png)
-
-*Above*: MS2 bacteriophage genome structure, colored by prob(unpaired), calculated in EternaFold.
-
-*Below*: Visualizing the MFE structure and p(unpaired) of an mRNA for eGFP, at increasing temperatures in Vienna.
-![](images/melting_eGFP_mRNA.gif)
-
-To set up: `python setup.py install`
+To set up:
+```
+pip install -r requirements.txt
+python setup.py install
+```
 
 See `examples.ipynb` for example usage.
 
