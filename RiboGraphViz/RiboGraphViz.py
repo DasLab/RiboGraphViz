@@ -5,7 +5,6 @@ from networkx.drawing.nx_agraph import graphviz_layout
 import matplotlib.colors as mcolors
 from matplotlib import cm
 import matplotlib.pyplot as plt
-import seaborn as sns
 from matplotlib.patches import Circle
 import sys
 import numpy as np
@@ -58,22 +57,6 @@ class RiboGraphViz(object):
         self.calc_MLD()
 
         self.n_hairpins, self.n_internal_loops, self.n_3WJs, self.n_4WJs, self.n_5WJs_up = self.count_loops()
-
-    def get_53_distance(self):
-
-        plot_nodes = [n for n in list(self.G.nodes) if isinstance(n,str)]
-        subgraph = self.G.subgraph(plot_nodes)
-        subgraph = subgraph.to_undirected()
-
-        if not self.is_multi:
-            #locate 5' nucleotide
-            if 'n0' in list(subgraph.nodes()):
-                five_loc = 'n0'
-            else:
-                five_loc = 'h1b'
-
-            if 'n%d' % (self.N-1) in list(subgraph.nodes()):
-                three_loc = 'n%d' % (self.N-1)
 
     def calc_MLD(self):
         nodes = [n for n in list(self.G.nodes)] # if not isinstance(n,str)]
@@ -383,7 +366,6 @@ class RiboGraphViz(object):
         return node_pos_list_x, node_pos_list_y
 
 
-
     def draw(self, label=None, struct_label=None, line=False,
         align=False, align_mode='COM', x0=0, y0=0,
          c = None, cmap='plasma', alpha=None, ax=None,
@@ -477,9 +459,6 @@ class RiboGraphViz(object):
                 plt.text(x_coords[label_pos[i]]+x0, y_coords[label_pos[i]]+y0, text)
 
         ax.axis('off')
-
-        # nx.draw(subgraph, pos, node_size=node_sizes, labels = node_labels, node_color = sns.color_palette('deep',1), 
-        #     width=1, arrows=False, solid_capstyle='round',font_size=20, **kwargs)
         return ax
 
     def count_loops(self):
