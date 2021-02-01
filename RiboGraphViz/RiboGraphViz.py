@@ -50,33 +50,11 @@ class RiboGraphViz(object):
         self.helix_width = 1
         self.N = len(self.secstruct)
         self.sequence=sequence
+        self.struct_properties_ran = False
 
         self.fiveprime_x, self.fiveprime_y, self.threeprime_x, self.threeprime_y = None, None, None, None
 
         self.setup_graph()
-        self.calc_MLD()
-
-        self.n_hairpins, self.n_internal_loops, self.n_3WJs, self.n_4WJs, self.n_5WJs_up = self.count_loops()
-
-    def calc_MLD(self):
-        nodes = [n for n in list(self.G.nodes)] # if not isinstance(n,str)]
-        subgraph = self.G.subgraph(nodes).to_undirected()
-
-        first_helix_node = None
-        for n in nodes:
-            if isinstance(n, str):
-                if n.startswith('h'):
-                    first_helix_node = n
-                    break
-
-
-        if first_helix_node is None:
-            self.MLD = 0
-        else:
-            node1 = [x for x in nx.traversal.bfs_edges(subgraph, first_helix_node)][-1][-1]
-            node2 = [x for x in nx.traversal.bfs_edges(subgraph, node1)][-1][-1]
-
-            self.MLD = nx.shortest_path_length(subgraph, node1, node2, weight='MLD_weight')
 
     def setup_graph(self):
         '''Create graph by reading pairmap array and recursively creating edges.'''
@@ -141,11 +119,7 @@ class RiboGraphViz(object):
                 if ind not in self.chainbreak:
                     self.G.add_edge('n%d' % (ind-1), 'n%d' % ind, len=1, MLD_weight=0)
 
-                #print('n%d' % (ind-1), 'n%d' % ind,)
-
-
         for stem_ind in range(1,len(self.stems)+1):
-
 
             stem_length = len(self.stems[stem_ind-1])
             color_ind = np.where(self.stem_assignment==stem_ind)[0][0]
@@ -159,14 +133,12 @@ class RiboGraphViz(object):
                 if self.stem_assignment[i+1] != 0.0 and self.stem_assignment[i] != 0.0:
                     stem_ind_1 = self.stem_assignment[i]
                     stem_ind_2 = self.stem_assignment[i+1]
-                    #color_ind = np.where(self.stem_assignment==stem_ind_1)[0][0]
 
                     #print("DEBUG", stem_ind_1, stem_ind_2)
                     #print("DEBUG", self.secstruct[i:i+2])
 
                     if self.secstruct[i:i+2] == '((':
                         self.G.add_edge('h%da' % stem_ind_1,'h%db' % stem_ind_2, len=1, weight=1, MLD_weight=0)
-                        #self.G.add_edge(int(stem_ind_1), int(stem_ind_2)) # hkws hack dec 14
                     elif self.secstruct[i:i+2] == ')(':
                         if i+1 not in self.chainbreak:
                             self.G.add_edge('h%db' % stem_ind_1,'h%db' % stem_ind_2, len=1, weight=1, MLD_weight=0)
@@ -461,6 +433,33 @@ class RiboGraphViz(object):
         ax.axis('off')
         return ax
 
+## Attributes for structure metrics.
+    def run_structure_properties(self):
+
+        self.calc_MLD()
+        self.n_hairpins, self.n_internal_loops, self.n_3WJs, self.n_4WJs, self.n_5WJs_up = self.count_loops()
+        self.struct_properties_ran = True
+
+    def calc_MLD(self):
+        nodes = [n for n in list(self.G.nodes)] # if not isinstance(n,str)]
+        subgraph = self.G.subgraph(nodes).to_undirected()
+
+        first_helix_node = None
+        for n in nodes:
+            if isinstance(n, str):
+                if n.startswith('h'):
+                    first_helix_node = n
+                    break
+
+
+        if first_helix_node is None:
+            self.MLD = 0
+        else:
+            node1 = [x for x in nx.traversal.bfs_edges(subgraph, first_helix_node)][-1][-1]
+            node2 = [x for x in nx.traversal.bfs_edges(subgraph, node1)][-1][-1]
+
+            self.MLD = nx.shortest_path_length(subgraph, node1, node2, weight='MLD_weight')
+
     def count_loops(self):
         n_1, n_2, n_3, n_4, n_5 = 0,0,0,0,0
         nodes = [n for n in list(self.G.nodes) if not isinstance(n,str)]
@@ -481,6 +480,9 @@ class RiboGraphViz(object):
         return n_1 - 1, n_2, n_3, n_4, n_5 #subtract off 1 to not count exterior loop as hairpin
 
     def get_info(self):
+        if not self.struct_properties_ran:
+            self.run_structure_properties()
+
         print("Max ladder distance: %d" % self.MLD)
         print("n_hairpins: %d" % self.n_hairpins)
         print("n_internal_loops: %d" % self.n_internal_loops)
