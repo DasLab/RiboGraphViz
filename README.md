@@ -15,9 +15,13 @@ Note: Not intended for detailed layouts -- loops may switch orientation in z-axi
 
 To set up:
 ```
-pip install -r requirements.txt
-python setup.py install
+sudo pip install -r requirements.txt
+sudo python setup.py install
 ```
+
+You'll need to use Python3; Python2 won't work. 
+
+*Tips for Mac users*: if you're stuck with Python 2, setting up a virtual environment (e.g., with `conda environment`) to install Python3 might be a good choice. You may also need to install `pygraphviz` -- which does not work with conda, but does work with `brew` and `pip install`, as noted [here](https://pygraphviz.github.io/documentation/stable/install.html). 
 
 See `examples.ipynb` for example usage.
 
