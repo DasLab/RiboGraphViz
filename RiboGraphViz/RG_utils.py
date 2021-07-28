@@ -1,6 +1,7 @@
 from collections import Counter
 import numpy as np
 from copy import copy
+import math
 
 #Copied from ToyFold 1D utils (Rhiju Das Matlab code originally)
 
@@ -18,7 +19,7 @@ def convert_structure_to_bps(secstruct):
     bps = []
 
     #Find other delimiters
-    other_delimiters = [k for k in Counter(secstruct).keys() if k not in ['.','(',')','[',']','{','}']]
+    other_delimiters = [k for k in Counter(secstruct).keys() if k not in ['.','(',')','[',']','{','}',"<",">"]]
 
     for delim in other_delimiters:
         pos = find_all(secstruct, delim)
@@ -34,8 +35,8 @@ def convert_structure_to_bps(secstruct):
         for ind in range(N):
             bps.append([i[ind],j[-1-ind]])
 
-    left_delimiters = ['(','{','[']
-    right_delimiters = [')','}',']']
+    left_delimiters = ['(','{','[',"<"]
+    right_delimiters = [')','}',']',">"]
 
     for (left_delim, right_delim) in list(zip(left_delimiters, right_delimiters)):
 
@@ -179,11 +180,14 @@ def get_pairmap(secstruct):
     for ii in i_range:
         pairs_array.append(-1)
 
+    left_delimiters = ['(','{','[',"<"]
+    right_delimiters = [')','}',']',">"]
+
     # assign pairs based on secstruct
     for ii in i_range:
-        if(secstruct[ii] == "("):
+        if(secstruct[ii] in left_delimiters):
             pair_stack.append(ii)
-        elif(secstruct[ii] == ")"):
+        elif(secstruct[ii] in right_delimiters):
             if not pair_stack:
                 end_stack.append(ii)
             else:
@@ -239,3 +243,61 @@ def compose_structs(list_of_rg_objs, label_list=None):
                     break
     #colors = [new[u][v]['color'] for u,v in subgraph.edges()]
     #nx.draw(new, pos, width=3, node_size=0, edge_color = colors, arrows=False, solid_capstyle='round')
+
+def _flip_helix(x,y,left,right):
+    # get center line between 2 groups
+    # left - list of indices 
+    # right - list of indices 
+    class1 = []
+    class2 = []
+    labels1 = []
+    labels2 =[]
+    for i in left:
+        class1.append(np.array([x[i],y[i]]))
+        labels1.append(-1)
+    for i in right:
+        class2.append(np.array([x[i],y[i]]))
+        labels1.append(1)
+    class1 = np.array(class1)
+    class2 = np.array(class2)
+    X = np.vstack((class1, class2))
+    m = len(X)
+    X = np.array([np.ones(m), X[:, 0], X[:, 1]]).T
+    Y = np.concatenate((labels1, labels2)).T
+    beta = np.linalg.inv(X.T @ X) @ (X.T @ Y)
+    # 0 = b0 +b1x +b2y
+    
+    # reflect all points over center line
+    for i in left+right:
+        temp = -2*(beta[0]+beta[1]*x[i]+beta[2]*y[i])/(beta[1]**2+beta[2]**2)
+        x[i] = temp*beta[1]+x[i]
+        y[i] = temp*beta[2]+y[i]
+    return x,y
+
+
+def _move_group(x,y,offset,group):
+    # group - list of indices 
+    # offset - [x,y] for movement
+    # move all items in the group
+    for i in group:
+        x[i] += offset[0]
+        y[i] += offset[1]
+    return x,y
+
+
+def _rotate_group(x,y,angle,group):
+    # group - list of indices 
+    # angle in degrees
+    rotation =  math.radians(angle)
+    sum_x = 0
+    sum_y = 0
+    num_points = len(group)
+    for i in group:
+        sum_x += x[i]
+        sum_y += y[i]
+    centroid = [sum_x/num_points, sum_y/num_points]
+    for i in group:
+        x_orig = x[i]
+        x[i] = centroid[0] + math.cos(rotation) * (x[i] - centroid[0]) - math.sin(rotation) * (y[i] - centroid[1])
+        y[i] = centroid[1] + math.sin(rotation) * (x_orig - centroid[0]) + math.cos(rotation) * (y[i] - centroid[1])
+    return x,y

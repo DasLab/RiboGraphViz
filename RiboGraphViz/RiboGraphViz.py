@@ -7,6 +7,7 @@ from matplotlib import cm
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 import sys
+import itertools
 import numpy as np
 
 class RiboGraphViz(object):
@@ -58,7 +59,9 @@ class RiboGraphViz(object):
 
     def setup_graph(self):
         '''Create graph by reading pairmap array and recursively creating edges.'''
-        
+        left_delimiters = ['(','{','[',"<"]
+        right_delimiters = [')','}',']',">"]
+
         self.G.add_node(0)
         jj = 0
 
@@ -89,9 +92,9 @@ class RiboGraphViz(object):
                 self.G.add_node('n%d' % i)
 
                 if stem_assignment_left[i] > 0:
-                    if self.secstruct[i-1]=='(':
+                    if self.secstruct[i-1] in left_delimiters:
                         letter='a'
-                    elif self.secstruct[i-1]==')':
+                    elif self.secstruct[i-1] in right_delimiters:
                         letter='b'
                     if i not in self.chainbreak:
                         self.G.add_edge('n%d' % i,'h%d%s' % (self.stem_assignment[i-1], letter), len=1.25, MLD_weight=0)
@@ -101,9 +104,9 @@ class RiboGraphViz(object):
                 if stem_assignment_right[i] > 0:
                     #print(i)
 
-                    if self.secstruct[i+1]==')':
+                    if self.secstruct[i+1] in right_delimiters:
                         letter='a'
-                    elif self.secstruct[i+1]=='(':
+                    elif self.secstruct[i+1] in left_delimiters:
                         letter='b'
                     if i+1 not in self.chainbreak:
                         self.G.add_edge('n%d' % i,'h%d%s' % (self.stem_assignment[i+1], letter), len=1.25, MLD_weight=0)
@@ -137,14 +140,20 @@ class RiboGraphViz(object):
                     #print("DEBUG", stem_ind_1, stem_ind_2)
                     #print("DEBUG", self.secstruct[i:i+2])
 
-                    if self.secstruct[i:i+2] == '((':
+                    left_delimiters = ['(','{','[',"<"]
+                    right_delimiters = [')','}',']',">"]
+                    left_left_same = [x+x for x in left_delimiters]
+                    right_left = [x[0]+x[1] for x in list(itertools.product(right_delimiters,left_delimiters))]
+                    right_right_same = [x+x for x in right_delimiters]
+
+                    if self.secstruct[i:i+2] in left_left_same:
                         self.G.add_edge('h%da' % stem_ind_1,'h%db' % stem_ind_2, len=1, weight=1, MLD_weight=0)
-                    elif self.secstruct[i:i+2] == ')(':
+                    elif self.secstruct[i:i+2] in right_left:
                         if i+1 not in self.chainbreak:
                             self.G.add_edge('h%db' % stem_ind_1,'h%db' % stem_ind_2, len=1, weight=1, MLD_weight=0)
                             #self.G.add_edge(stem_ind_1, stem_ind_2)
 
-                    elif self.secstruct[i:i+2] == '))':
+                    elif self.secstruct[i:i+2] in right_right_same:
                         self.G.add_edge('h%db' % stem_ind_1,'h%da' % stem_ind_2, len=1, weight=1, MLD_weight=0)
                         #self.G.add_edge(stem_ind_1, stem_ind_2)
 
@@ -190,7 +199,7 @@ class RiboGraphViz(object):
 
                     jj+=1
 
-    def get_coordinates(self, align=False, align_mode='COM'):
+    def get_coordinates(self, align=False, align_mode='COM',return_pos_dict=False,helices_to_flip=[],move_coord_groups=[],rotate_groups=[]):
         '''
         align (bool): set first nucleotide at [0,0] and rotates structure according to align_mode.
         align_mode ("COM","end"): if 'COM', aligns center of mass to x axis. if "end", aligns 3' end to x axis.
@@ -334,8 +343,20 @@ class RiboGraphViz(object):
         node_pos_list_x /= bond_width
         node_pos_list_y /= bond_width
 
+        for left,right in helices_to_flip:
+            node_pos_list_x,node_pos_list_y = utils._flip_helix(node_pos_list_x,node_pos_list_y,left,right)
+        for offset,group in move_coord_groups:
+            node_pos_list_x,node_pos_list_y = utils._move_group(node_pos_list_x,node_pos_list_y,offset,group)
+        for angle,group in rotate_groups:
+            node_pos_list_x,node_pos_list_y = utils._rotate_group(node_pos_list_x,node_pos_list_y,angle,group)        
 
-        return node_pos_list_x, node_pos_list_y
+        if return_pos_dict:
+            coord_dict = {}
+            for i in range(len(node_pos_list_x)):
+                coord_dict[i] = np.array([node_pos_list_x[i],node_pos_list_y[i]])
+            return coord_dict
+        else:
+            return node_pos_list_x, node_pos_list_y
 
 
     def draw(self, label=None, struct_label=None, line=False,
