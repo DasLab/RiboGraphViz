@@ -436,20 +436,20 @@ class RiboGraphViz(object):
             circ = plt.Circle((x_coords[i]+x0, y_coords[i]+y0), radius=1/2, color=colors[i], alpha=alpha[i],linewidth=0)
             ax.add_artist(circ)
             if label:
-                plt.text(x_coords[i]+x0, y_coords[i]+y0, label[i],
+                ax.text(x_coords[i]+x0, y_coords[i]+y0, label[i],
                  horizontalalignment='center', verticalalignment='center', fontsize=fontsize)
         #plt.scatter(new_node_pos_list_x, new_node_pos_list_y, s=1, c = c, cmap=cmap)
 
         if self.fiveprime_x is not None:
-            plt.text(self.fiveprime_x+x0, self.fiveprime_y+y0, "5'")
+            ax.text(self.fiveprime_x+x0, self.fiveprime_y+y0, "5'", fontsize=fontsize)
 
         if self.threeprime_x is not None:
-            plt.text(self.threeprime_x+x0, self.threeprime_y+y0, "3'")
+            ax.text(self.threeprime_x+x0, self.threeprime_y+y0, "3'", fontsize=fontsize)
 
         if struct_label and self.is_multi:
             label_pos = [0]+self.chainbreak
             for i, text in enumerate(struct_label):
-                plt.text(x_coords[label_pos[i]]+x0, y_coords[label_pos[i]]+y0, text)
+                ax.text(x_coords[label_pos[i]]+x0, y_coords[label_pos[i]]+y0, text, fontsize=fontsize)
 
         ax.axis('off')
         return ax
